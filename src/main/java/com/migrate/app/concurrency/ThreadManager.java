@@ -1,13 +1,14 @@
-package com.example.demo.concurrency;
+package com.migrate.app.concurrency;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.example.demo.entity.AceMigMaster;
-import com.example.demo.repo.AceMigMasterRepository;
+import com.migrate.app.entity.AceMigMaster;
+import com.migrate.app.repository.AceMigMasterRepository;
 
 public class ThreadManager {
+	
 	
 	private static final int MAX_THREADS = 10;
 	private ExecutorService executorService;

@@ -1,4 +1,4 @@
-package com.example.demo.concurrency;
+package com.migrate.app.concurrency;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -9,18 +9,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.example.demo.entity.AceMigMaster;
-import com.example.demo.repo.AceMigMasterRepository;
+import com.migrate.app.entity.AceMigMaster;
+import com.migrate.app.repository.AceMigMasterRepository;
 
 @EnableScheduling
 public class ConsumerProcessingThread implements Runnable {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ConsumerProcessingThread.class);
-	
+
 	List<AceMigMaster> list;
 	AceMigMasterRepository aceMigMasterRepository;
 	AceMigMaster aceMigMaster;
-	
+
 	public ConsumerProcessingThread(List<AceMigMaster> list, AceMigMasterRepository aceMigMasterRepository,
 			AceMigMaster aceMigMaster) {
 		this.list = Collections.synchronizedList(list);
@@ -30,19 +30,18 @@ public class ConsumerProcessingThread implements Runnable {
 
 	@Override
 	public void run() {
-		
+
 		try {
-			aceMigMaster.setProcIndicator("Locked");
+			aceMigMaster.setProcInd("Locked");
 			aceMigMaster.setUpdateDate(Date.valueOf(LocalDate.now()));
-			aceMigMaster.setExecutionSequence(Thread.currentThread().getName());
+			aceMigMaster.setExecSeq(Thread.currentThread().getName());
 			aceMigMasterRepository.save(aceMigMaster);
-			logger.info("Locked Customer {} in thread {}", aceMigMaster.getLegacyCusomerId(), Thread.currentThread().getName());
-		}catch (Exception e) {
-			logger.error("Failed to process customer {}: {}", aceMigMaster.getLegacyCusomerId());
+			logger.info("Locked Customer {} in thread {}", aceMigMaster.getLgcCustID(),
+					Thread.currentThread().getName());
+		} catch (Exception e) {
+			logger.error("Failed to process customer {}: {}", aceMigMaster.getLgcCustID());
 		}
-		
+
 	}
-	
-	
 
 }

@@ -1,4 +1,4 @@
-package com.example.demo.impl;
+package com.migrate.app.impl;
 
 import java.security.SecureRandom;
 import java.sql.Date;
@@ -11,57 +11,59 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.concurrency.ThreadManager;
-import com.example.demo.entity.AceMigMaster;
-import com.example.demo.repo.AceMigMasterRepository;
-import com.example.demo.service.AceMigService;
+import com.migrate.app.concurrency.ThreadManager;
+import com.migrate.app.entity.AceMigMaster;
+import com.migrate.app.repository.AceMigMasterRepository;
+import com.migrate.app.service.AceMigService;
 
 @Service
 public class AceMigServiceImpl implements AceMigService {
-
 	private static final Logger logger = LoggerFactory.getLogger(AceMigServiceImpl.class);
-	
-	public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	public static final int MAX_LENGTH = 30;
-	
+
 	@Autowired
 	AceMigMasterRepository aceMigMasterRepository;
 
 	@Override
 	public void pushCustomerToDatabase(List<Long> list) {
 		List<Long> existingId = aceMigMasterRepository.findAll()
-				.stream().map(AceMigMaster::getLegacyCusomerId).collect(Collectors.toList());
+				.stream().map(AceMigMaster::getLgcCustID)
+				.collect(Collectors.toList());
 
-		for(Long id : list) {
-			if(!existingId.contains(id)) {
+		for (Long id : list) {
+			if (!existingId.contains(id)) {
+				String tarId = generateTargetCustomerId();
 				AceMigMaster newEntry = new AceMigMaster();
 				Date date = Date.valueOf(LocalDate.now());
-				newEntry.setLegacyCusomerId(id);
-				newEntry.setTargetCustomerId(generateRandomString(MAX_LENGTH));
+				newEntry.setLgcCustID(id);
+				newEntry.setTarCustID(tarId);
 				newEntry.setCreateDate(date);
-				newEntry.setProcIndicator("IN");
+				newEntry.setProcInd("IN");
 				newEntry.setProcDescription("Customer Intilized");
-				newEntry.setExecutionSequence(Thread.currentThread().getName());
+				newEntry.setExecSeq(Thread.currentThread().getName());
 				aceMigMasterRepository.save(newEntry);
-				logger.info("Inserted legecyCustomerId {} with TAR Id {} into DB.", id, newEntry.getLegacyCusomerId());
-			}else {
+				logger.info("Inserted legecyCustomerId {} with TAR Id {} into DB.", id, newEntry.getLgcCustID());
+			} else {
 				logger.info("legecyCustomerId {} already exists, skipping inserted.", id);
 			}
 		}
+
 	}
-	
-	public String generateRandomString(int length) {
+
+	// To Generate Tar_Cust_Id
+	private String generateTargetCustomerId() {
+		int length = 30;
+		final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 		SecureRandom random = new SecureRandom();
-		StringBuilder builder = new StringBuilder(length);
-		for(int i = 0; i < 30; i++) {
-			builder.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			sb.append(chars.charAt(random.nextInt(chars.length())));
 		}
-		return builder.toString();
+		return sb.toString();
 	}
 
 	@Override
 	public void processEligibleCustomers() {
-		List<AceMigMaster> eligible = aceMigMasterRepository.findByProcIndicator("IN");
+		List<AceMigMaster> eligible = aceMigMasterRepository.findByProcInd("IN");
 		
 		ThreadManager threadManager = new ThreadManager();
 		for(AceMigMaster ace : eligible) {
@@ -69,8 +71,7 @@ public class AceMigServiceImpl implements AceMigService {
 		}
 		threadManager.shutdown();
 		logger.info("Proccesing of eligible customers completed.");
-		
-		
-		
+
 	}
+
 }

@@ -1,10 +1,10 @@
-package com.example.demo;
+package com.migrate.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MigrateCustomerApplicationTests {
+class MigrationApplicationTests {
 
 	@Test
 	void contextLoads() {
