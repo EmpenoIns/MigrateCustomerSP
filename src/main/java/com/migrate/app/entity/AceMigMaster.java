@@ -4,7 +4,10 @@ import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
